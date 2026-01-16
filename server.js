@@ -25,9 +25,18 @@ fastify.register(require("@fastify/env"), {
         }
     }
 })
+fastify.register(require("@fastify/static"),{
+    root: path.join(__dirname, 'uploads'),
+    prefix: '/uploads'
+})
+fastify.register(require("@fastify/multipart"))
+
 
 //register custom plugin
 fastify.register(require("./plugin/mongodb"))
+fastify.register(require("./plugin/jwt"))
+fastify.register(require("./routes/auth"),{prefix:"/auth"})
+fastify.register(require("./routes/thumbnail"),{prefix:"/thumbnail"})
 
 //test database connection
 fastify.get("/test", async (request, reply) => {
@@ -63,8 +72,9 @@ fastify.get("/test", async (request, reply) => {
 })
 const start = async () => {
     try {
-        await fastify.listen({port:process.env.PORT});
-        fastify.log.info(`server listening on ${process.env.port}`);
+        const port = parseInt(process.env.PORT) || 4000;
+        await fastify.listen({port: port, host: '0.0.0.0'});
+        fastify.log.info(`server listening on ${port}`);
     } catch (err) {
         fastify.log.error(err)
         process.exit(1)
